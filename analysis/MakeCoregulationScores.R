@@ -1,6 +1,4 @@
-i_j = commandArgs(trailingOnly=TRUE) #focal tissue, 
-s <- strsplit(i_j,split = "_")[[1]]
-i <- as.numeric(s[1])
+i = as.numeric(commandArgs(trailingOnly=TRUE)) #focal tissue
 ciswindow <- 2e6 
 
 library(data.table)
@@ -44,7 +42,8 @@ transcript_key <- transcript_key[keepgenes_focal]
 df1_focal <- df1_focal[,keepgenes_focal]
 focal_tissue_gene_ref <- focal_tissue_gene_ref[keepgenes_focal,]
 
-j <- i 
+for (j in 1:length(tissues)){
+if(j == i){ #apply bias correction
 acc <- fread(paste0("weights/accuracies/N320_smalltoo_accuracies_cish2_fromall_",tissues[i],".txt.gz"), header = F)
 acc <- acc$V2[match(transcript_key,acc$V1)]
 
@@ -65,6 +64,51 @@ coreg_before_sum_pc <- cor_est_pc^2
 mysum <- sum(coreg_before_sum_pc) - 1 + acc[k] 
 genegenecoreg_pc <- c(genegenecoreg_pc, mysum)
 }
-write.table(genegenecoreg_pc, file=paste0("/n/groups/price/tiffany/subpheno/AllGTExTissues_restore/1KG/TissueCoRegScores_v8_320EUR_smalltoo_onlyPC_Mar28Posh2/GeneCoRegScores_PCbiascorr_Focal_",tissues[i],"_with_",tissues[j],"_",2*ciswindow,"_cislocus.txt"), row.names = F, col.names = F, sep = "\t", quote = F)
-system(paste0("gzip /n/groups/price/tiffany/subpheno/AllGTExTissues_restore/1KG/TissueCoRegScores_v8_320EUR_smalltoo_onlyPC_Mar28Posh2/GeneCoRegScores_PCbiascorr_Focal_",tissues[i],"_with_",tissues[j],"_",2*ciswindow,"_cislocus.txt"))
+file=paste0("coregulation_scores/CoRegScores_v8_320EUR_smalltoo_",tissues[i],"_with_",tissues[j],".txt")
+write.table(genegenecoreg_pc, file=file, row.names = F, col.names = F, sep = "\t", quote = F)
+system(paste0("gzip ", file,))
+}else{ #target tissue is different from focal; normal co-regulation w/o bias correction
 
+
+if(j %in% small_tissues){load(paste0("predicted_expression_1KG/allEUR/designmat_",tissues[j],"_v8_allEUR_double.RData"))}else{
+load(paste0("predicted_expression_1KG/320EUR/designmat_",tissues[j],"_v8_320EUR_double.RData"))}
+
+if(j %in% small_tissues){transcript_key_other <- fread(paste0("weights/heritablegenes/Nall/TranscriptsIn",tissues[j],"Model.txt"), header = F)$V1
+keeptranscripts <- fread(paste0("weights/heritablegenes/Nall/TranscriptsIn",tissues[j],"Model_keep.txt"), header = F)$V1
+}else{
+transcript_key_other <- fread(paste0("weights/heritablegenes/N320/TranscriptsIn",tissues[j],"Model.txt"), header = F)$V1
+keeptranscripts <- fread(paste0("weights/heritablegenes/N320/TranscriptsIn",tissues[j],"Model_keep.txt"), header = F)$V1
+}
+
+w <- which(transcript_key_other %in% keeptranscripts)
+df1 <- df1[,w]
+transcript_key_other <- transcript_key_other[w]
+
+m <- match(transcript_key_other, gene_ref$gene_id)
+other_tissue_gene_ref <- gene_ref[m,]
+keepgenes_other <- which(other_tissue_gene_ref[,5] == "protein_coding")
+transcript_key_other <- transcript_key_other[keepgenes_other]
+df1 <- df1[,keepgenes_other]
+other_tissue_gene_ref <- other_tissue_gene_ref[keepgenes_other,]
+
+genegenecoreg_pc <- c() #vector of length g in focal tissue 
+for (k in 1:ncol(df1_focal)){
+#gene k is first gene in pair, therefore gene x must be only cis to gene k. 
+gene_k_chr <- focal_tissue_gene_ref$chr[k]
+gene_k_pos <- focal_tissue_gene_ref$start[k]
+ww <- which(other_tissue_gene_ref$chr == gene_k_chr)
+other_tissue_gene_ref_k_chrom <- other_tissue_gene_ref[ww,]
+ww <- which(other_tissue_gene_ref_k_chrom$start > gene_k_pos - ciswindow & other_tissue_gene_ref_k_chrom$start < gene_k_pos + ciswindow)
+other_tissue_gene_ref_k_cislocus <- other_tissue_gene_ref_k_chrom[ww,]
+
+cis_genes_pc <- match(other_tissue_gene_ref_k_cislocus$gene_id, other_tissue_gene_ref$gene_id)
+if(length(cis_genes_pc) == 0){cor_est_pc <- 0}else{cor_est_pc <- sapply(cis_genes_pc, function(x) cor(as.numeric(df1_focal[,k]),as.numeric(df1[,x])))}
+coreg_before_sum_pc <- cor_est_pc^2
+genegenecoreg_pc <- c(genegenecoreg_pc, sum(coreg_before_sum_pc))
+}
+
+file=paste0("coregulation_scores/CoRegScores_v8_320EUR_smalltoo_",tissues[i],"_with_",tissues[j],".txt")
+write.table(genegenecoreg_pc, file=file, row.names = F, col.names = F, sep = "\t", quote = F)
+system(paste0("gzip ", file,))
+
+}
