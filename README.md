@@ -36,6 +36,9 @@ twas_statistics/
 1. Using gene expression prediction models for cis-heritable genes (GCTA p < 0.01, GCTA h2 estimation > 0, cross validation R2 > 0), impute gene expression into reference panel, e.g. 489 European individuals in 1KG. 
 
 We use FUSION (http://gusevlab.org/projects/fusion/) to first compute score files for each gene expression model. Then we use plink, as done in FUSION, to impute gene expression into 1KG individuals.
+```
+predicted_expression/
+```
 
 2. Construct gene and tissue co-regulation scores using squared correlations of predicted expression and applying bias correction (using gene model accuracy) when tissue t = t'. 
 
