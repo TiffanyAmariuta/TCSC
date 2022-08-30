@@ -101,9 +101,8 @@ jk <- matrix(0,nrow = chunks,ncol = length(tissues))
 jk_weights <- matrix(0,nrow = chunks,ncol = 1)
 jk_sum <- matrix(0,nrow = chunks,ncol = 1)
 for (chunk in 1:chunks){
-print(chunk)
+print(paste0("processing jackknife chunk ",chunk," out of 200"))
 remove_genes <- which(a[,5] == chunk)
-print(length(remove_genes))
 tab <- table(a[remove_genes,4]) #freq of tissues
 subtract_genes <- rep(0,length(tissues))
 m <- match(1:length(tissues), names(tab))
@@ -131,4 +130,4 @@ variance_mat[1:ncol(jk),5] <- p.adjust(as.numeric(variance_mat[1:ncol(jk),4]), m
 variance_mat[nrow(variance_mat),5] <- NA
 
 colnames(variance_mat) <- c("Tissue","h2ge_t","JK_SE","P","FDRP")
-write.table(variance_mat, file = paste0("TCSC_",trait,".txt"), row.names = F, col.names = T, sep = "\t", quote = F)
+write.table(variance_mat, file = paste0("results/TCSC_",trait,".txt"), row.names = F, col.names = T, sep = "\t", quote = F)
