@@ -1,6 +1,6 @@
 #please set working directory with setwd() to your local path to TCSC/
 
-trait <- commandArgs(trailingOnly=TRUE) #format: example: UKB_460K.body_BMIz as in first column in TCSC/sumstats/alltraits.txt
+trait <- commandArgs(trailingOnly=TRUE) #format: example: UKB_460K.body_BMIz as in first column in sumstats/alltraits.txt
 
 library(data.table)
 library(Hmisc)

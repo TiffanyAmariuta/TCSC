@@ -173,5 +173,5 @@ fdradjusted_twosidedp <- p.adjust(twosidedP, method = "fdr")
 variance_mat[1:length(tissues),5] <- fdradjusted_twosidedp 
 variance_mat[(length(tissues)+1),5] <- NA
 
-colnames(variance_mat) <- c("Tissue","Covariance","JK_SE","P","FDRP")
+colnames(variance_mat) <- c("Tissue","omega_ge_t","JK_SE","P","FDRP")
 write.table(variance_mat, file = paste0("results/CrossTraitTCSC_",trait1,"_",trait2,".txt"), row.names = F, col.names = T, sep = "\t", quote = F)
