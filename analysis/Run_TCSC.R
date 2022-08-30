@@ -1,16 +1,21 @@
-trait <- commandArgs(trailingOnly=TRUE)
+#please set working directory with setwd() to your local path to TCSC/
+
+trait <- commandArgs(trailingOnly=TRUE) #format: example: UKB_460K.body_BMIz as in first column in TCSC/sumstats/alltraits.txt
 
 library(data.table)
 library(Hmisc)
 
-traits <- fread("TCSC/sumstats/alltraits.txt", header= F)$V1
-N <- traits$N[match(trait,traits$Trait_Identifier)]
+traits <- fread("sumstats/alltraits.txt", header=T) #File with list of traits with S-LDSC estimated SNP heritability, sd, z-score, and GWAS sample size. 
+m <- match(trait,traits$Trait_Identifier)
+N <- traits$N[m]
+h2g <- traits$h2g[m]
 
-y <- fread("TCSC/analysis/TissueGroups.txt", header = T)
-tissues <- unique(y$MetaTissue)
+y <- fread("analysis/TissueGroups.txt", header = T) #one row per GTEx tissue analyzed in Amariuta et al 2022 bioRxiv
+tissues <- unique(y$MetaTissue) #tissues with eQTL sample size < 320 are grouped together via meta-analysis if the correlation of marginal eQTL effects is > 0.93. 
 
-small_tissues <- c(3,5,11,12,14,22,24,27:30,33:35,37:38) #tissues with gene expression sample size < 320
-normal_tissues <- c(1:length(tissues))[-small_tissues] #tissues with gene expression sample size = 320
+n_eqtl <- sapply(1:length(tissues), function(x) sum(y$N_EUR[which(y$MetaTissue == tissues[x])])) #find total available sample size from GTEx data after accounting for meta-analysis of tissues
+small_tissues <- which(n_eqtl < 320)
+normal_tissues <- c(1:length(tissues))[-small_tissues] #in primary analysis, these tissues are subsampled such that eQTL sample size = 320
 
 get_cov_alpha1alpha1_multitissue <- function(alpha_z,CoRegMat,nGWAS,weights1,weights2,weights3){ 
 y <- (alpha_z^2)/nGWAS
@@ -23,28 +28,22 @@ cov_b1b1 <- cov_b1b1[1:ncol(CoRegMat)]
 return(cov_b1b1)
 }
 
-load("TCSC/analysis/InputCoreg_TCSC.RData")
-gtex <- fread("TCSC/analysis/gene_annotation.txt.gz", header = F, sep = "\t")
+load("analysis/InputCoreg_TCSC.RData")
+gtex <- fread("analysis/gene_annotation.txt.gz", header = F, sep = "\t")
 
 #### trait specific analysis #### 
+#Loads in twas (transcriptome-wide association study) summary statistics for the cis-heritable genes in each tissue
 alpha_z <- c()
 for (i in 1:length(tissues)){
 if(i %in% small_tissues){
-transcript_key <- fread(paste0("TCSC/weights/heritablegenes/Nall/TranscriptsIn",tissues[i],"Model.txt"), header = F)$V1
-keep <- fread(paste0("TCSC/weights/heritablegenes/Nall/TranscriptsIn",tissues[i],"Model_keep.txt"), header = F)$V1
-z <- fread(paste0("TCSC/twas_statistics/allEUR_GTEx/",trait,"/Marginal_alphas_",trait,"_",tissues[i],".txt.gz"), header = F)$V1
-w <- which(transcript_key %in% keep) 
-transcript_key <- transcript_key[w] 
-z <- z[w]
-m <- match(transcript_key,gtex$V7)
-genetype <- gtex$V8[m]
-w <- which(genetype == "protein_coding")
-z <- z[w]
-alpha_z <- c(alpha_z,z)
+transcript_key <- fread(paste0("weights/heritablegenes/Nall/TranscriptsIn",tissues[i],"Model.txt"), header = F)$V1
+keep <- fread(paste0("weights/heritablegenes/Nall/TranscriptsIn",tissues[i],"Model_keep.txt"), header = F)$V1
+z <- fread(paste0("twas_statistics/allEUR_GTEx/",trait,"/Marginal_alphas_",trait,"_",tissues[i],".txt.gz"), header = F)$V1
 }else{
-transcript_key <- fread(paste0("TCSC/weights/heritablegenes/N320/TranscriptsIn",tissues[i],"Model.txt"), header = F)$V1
-keep <- fread(paste0("TCSC/weights/heritablegenes/N320/TranscriptsIn",tissues[i],"Model_keep.txt"), header = F)$V1 
-z <- fread(paste0("TCSC/twas_statistics/320EUR_GTEx/",trait,"/Marginal_alphas_",trait,"_",tissues[i],".txt.gz"), header = F)$V1
+transcript_key <- fread(paste0("weights/heritablegenes/N320/TranscriptsIn",tissues[i],"Model.txt"), header = F)$V1
+keep <- fread(paste0("weights/heritablegenes/N320/TranscriptsIn",tissues[i],"Model_keep.txt"), header = F)$V1 
+z <- fread(paste0("twas_statistics/320EUR_GTEx/",trait,"/Marginal_alphas_",trait,"_",tissues[i],".txt.gz"), header = F)$V1
+}
 w <- which(transcript_key %in% keep)
 transcript_key <- transcript_key[w]
 z <- z[w]
@@ -53,7 +52,6 @@ genetype <- gtex$V8[m]
 w <- which(genetype == "protein_coding")
 z <- z[w]
 alpha_z <- c(alpha_z,z)
-}
 }
 alpha_z <- alpha_z[-remove_genes]
 w <- which(alpha_z^2 > max(80,0.001*N) | is.na(alpha_z)) #trait specific qc 
@@ -67,8 +65,8 @@ X <- X[-w,]
 }
 N_tissuespecific <- as.numeric(table(tissueassign))
 a_transcripts <- table(transcripts)
-weights3 <- sapply(1:length(transcripts), function(x) as.numeric(a_transcripts)[match(transcripts[x], names(a_transcripts))])
-weights2 <- sapply(1:nrow(X), function(x) sum(X[x,-tissueassign[x]])) + 1
+weights3 <- sapply(1:length(transcripts), function(x) as.numeric(a_transcripts)[match(transcripts[x], names(a_transcripts))]) #tissue redundancy weight to update genes that are regulated in more tissue-specific contexts
+weights2 <- sapply(1:nrow(X), function(x) sum(X[x,-tissueassign[x]])) + 1 #total co-regulation weight to prevent double counting of signal from co-regulated genes 
 expected_true_cish2_genes <- N_tissuespecific
 
 #### set up jackknife #### 
@@ -92,11 +90,11 @@ a <- cbind(a,transcripts)
 mean_chisq <- mean(alpha_z^2, na.rm = T)
 totcoreg <- rowSums(X)
 crude_h2_est <- (mean_chisq - 1)/(N*mean(totcoreg)) #should this be average co-reg score or average sum across tissues co-reg score? 
-weights1 <- (1 + N*crude_h2_est*totcoreg)^2 #bias corrected but not scaled X 
+weights1 <- (1 + N*crude_h2_est*totcoreg)^2 #bias corrected but not scaled X; heteroscedasticity weight based on s-ldsc
 
-variance_mat <- matrix(0,1+length(tissues),6) #estimate, jackknife SE, P
+variance_mat <- matrix(0,1+length(tissues),5) #tissue, h2ge_t, jackknife SE, P, FDR across tissues
 variance_mat[,1] <- c(tissues,"AllTissues")
-variance_mat[1:length(tissues),2] <- get_cov_alpha1alpha1_multitissue(alpha_z,X,N,weights1,weights2,weights3) * expected_true_cish2_genes
+variance_mat[1:length(tissues),2] <- get_cov_alpha1alpha1_multitissue(alpha_z,X,N,weights1,weights2,weights3) * expected_true_cish2_genes / h2g
 variance_mat[(length(tissues)+1),2] <- sum(as.numeric(variance_mat[1:length(tissues),2]))
 
 jk <- matrix(0,nrow = chunks,ncol = length(tissues))
@@ -120,9 +118,8 @@ crude_h2_est <- (mean_chisq - 1)/(N*mean(totcoreg))
 weights1_jk <- (1 + N*crude_h2_est*totcoreg)^2
 weights2_jk <- weights2[-remove_genes] 
 weights3_jk <- weights3[-remove_genes] 
-jk[chunk,] <- get_cov_alpha1alpha1_multitissue(alpha_z_jk,X_jk,N,weights1_jk,weights2_jk,weights3_jk)* N_tissuespecific_jk 
+jk[chunk,] <- get_cov_alpha1alpha1_multitissue(alpha_z_jk,X_jk,N,weights1_jk,weights2_jk,weights3_jk) * N_tissuespecific_jk / h2g
 jk_sum[chunk,1] <- sum(as.numeric(jk[chunk,]))
-print(jk[chunk,1])
 jk_weights[chunk,1] <- sum(1/(weights1_jk*weights2_jk*weights3_jk))
 } 
 
@@ -132,7 +129,6 @@ variance_mat[nrow(variance_mat),3] <- sqrt(wtd.var(jk_sum[,1],jk_weights[,1]))*s
 variance_mat[,4] <- pnorm(q = 0, mean = as.numeric(variance_mat[,2]), sd = as.numeric(variance_mat[,3]))
 variance_mat[1:ncol(jk),5] <- p.adjust(as.numeric(variance_mat[1:ncol(jk),4]), method = "fdr")
 variance_mat[nrow(variance_mat),5] <- NA
-variance_mat[,6] <- as.numeric(variance_mat[,2])/sum(as.numeric(variance_mat[1:ncol(jk),2]))
 
-colnames(variance_mat) <- c("Tissue","Variance","JK_SE","P","FDRP","Variance_divideby_Total")
+colnames(variance_mat) <- c("Tissue","h2ge_t","JK_SE","P","FDRP")
 write.table(variance_mat, file = paste0("TCSC_",trait,".txt"), row.names = F, col.names = T, sep = "\t", quote = F)
