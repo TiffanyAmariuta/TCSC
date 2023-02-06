@@ -1,5 +1,3 @@
-#please set working directory with setwd() to your local path to TCSC/
-
 trait_h2g_N <- commandArgs(trailingOnly=TRUE) #format: example: UKB_460K.body_BMIz as in first column in sumstats/alltraits.txt
 trait_h2g_N <- strsplit(trait_h2g_N,split = ",")[[1]]
 trait <- trait_h2g_N[1]
