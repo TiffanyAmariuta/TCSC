@@ -12,6 +12,10 @@ R v.3.6.1
 1. Preprocess your GWAS summary statistics such that they are in LDSC format
 
 See directions at https://github.com/bulik/ldsc/wiki/Summary-Statistics-File-Format
+Refer to your genome-wide summary statistics using the path and name of your trait as suggested below
+```
+your_genomewide_sumstats=your_path/${trait}.sumstats
+```
 
 2. Clone the TCSC github repository
 ```
@@ -82,6 +86,26 @@ do
 Rscript TCSC/analysis/FUSION.assoc_test.meta.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/320EUR_metatissues/${tissue}.pos --weights_dir TCSC_weight_files/v8_320EUR --ref_ld_chr 1000G_EUR_Phase3_plink/1000G.EUR.QC. --chr $chr --out results_320/v8_320EUR.${your_genomewide_sumstats}/v8_320EUR.${trait}.${tissue}.${chr}.dat
 done
 done
+```
+
+7. Aggregate TWAS results across chromosomes
+
+```
+for tissue in `cat TissuesA.txt`
+do
+Rscript concat_chrs.R ${trait},${tissue}
+done
+
+for tissue in `cat TissuesB.txt`
+do
+Rscript concat_chrs_small.R ${trait},${tissue}
+done
+
+for tissue in `cat TissuesC.txt`
+do
+Rscript concat_chrs.R ${trait},${tissue}
+done
+
 ```
 
 ### Input Data 
