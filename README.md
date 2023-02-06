@@ -8,6 +8,82 @@ TCSC is a statistical genetics method to identify causal tissues in diseases and
 
 R v.3.6.1
 
+### Quick Start: Apply TCSC to new GWAS summary statistics and default gene expression data from GTEx
+1. Preprocess your GWAS summary statistics such that they are in LDSC format
+
+See directions at https://github.com/bulik/ldsc/wiki/Summary-Statistics-File-Format
+
+2. Clone the TCSC github repository
+```
+git clone https://github.com/TiffanyAmariuta/TCSC
+```
+
+3. Clone FUSION github repository
+
+```
+git clone https://github.com/gusevlab/fusion_twas
+```
+
+4. Download and unzip LD reference files for 1000 Genomes European population
+```
+wget https://storage.googleapis.com/broad-alkesgroup-public/LDSCORE/1000G_Phase3_plinkfiles.tgz
+tar zxvf 1000G_Phase3_plinkfiles.tgz
+```
+
+5. Download and unzip TCSC gene expression weight files
+```
+mkdir -p TCSC_weight_files/v8_320EUR/
+cd TCSC_weight_files/v8_320EUR/
+for tissue in `cat TissuesA.txt`
+do
+wget https://storage.googleapis.com/broad-alkesgroup-public/TCSC/GeneExpressionModels/eQTL_samplesize_320/${tissue}.tar.gz
+done
+
+mkdir -p TCSC_weight_files/v8_allEUR/
+cd TCSC_weight_files/v8_allEUR/
+for tissue in `cat TissuesB.txt`
+do
+wget https://storage.googleapis.com/broad-alkesgroup-public/TCSC/GeneExpressionModels/eQTL_samplesize_all/${tissue}.tar.gz
+done
+
+cd ../v8_320EUR/
+for tissue in `cat TissuesC.txt`
+do
+wget https://storage.googleapis.com/broad-alkesgroup-public/TCSC/GeneExpressionModels/eQTL_samplesize_320/${tissue}.post.meta.tar.gz
+done
+```
+
+6. Run FUSION to perform TWAS analysis on provided gene expression data
+
+```
+#A. GTEx tissues that we downsampled to N = 320 individuals 
+for tissue in `cat TissuesA.txt`
+do
+for chr in {1..22}
+do
+Rscript fusion_twas-master/FUSION.assoc_test.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/320EUR_metatissues/${tissue}.pos --weights_dir TCSC_weight_files/v8_320EUR --ref_ld_chr 1000G_EUR_Phase3_plink/1000G.EUR.QC. --chr $chr --out results_320/v8_320EUR.${your_genomewide_sumstats}/v8_320EUR.${trait}.${tissue}.${chr}.dat
+done
+done
+
+#B. GTEx tissues with small sample size that we could not downsample
+for tissue in `cat TissuesB.txt`
+do
+for chr in {1..22}
+do
+Rscript fusion_twas-master/FUSION.assoc_test.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/allEUR_tissues/${tissue}.pos --weights_dir TCSC_weight_files/v8_allEUR --ref_ld_chr 1000G_EUR_Phase3_plink/1000G.EUR.QC. --chr $chr --out results_all/v8_allEUR.${your_genomewide_sumstats}/v8_allEUR.${trait}.${tissue}.${chr}.dat
+done
+done
+
+#C. Meta-analuyzed GTEx tissues which had small sample size and high genetic correlation to another GTEx tissue 
+for tissue in `cat TissuesC.txt`
+do
+for chr in {1..22}
+do
+Rscript fusion_twas-master/FUSION.assoc_test.meta.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/320EUR_metatissues/${tissue}.pos --weights_dir TCSC_weight_files/v8_320EUR --ref_ld_chr 1000G_EUR_Phase3_plink/1000G.EUR.QC. --chr $chr --out results_320/v8_320EUR.${your_genomewide_sumstats}/v8_320EUR.${trait}.${tissue}.${chr}.dat
+done
+done
+```
+
 ### Input Data 
 
 1. Signed GWAS summary statistics (formatted for S-LDSC; Finucane 2015 Nat Genet)
