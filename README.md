@@ -171,7 +171,7 @@ TCSC/predicted_expression/
 2. Construct gene and tissue co-regulation scores using squared correlations of predicted expression and applying bias correction (using gene model accuracy) when tissue t = t'. 
 
 ```
-TCSC/analysis/MakeCoregulationScores.R
+TCSC/analysis/MakeCoregulationScores_N320.R
 ```
 
 3. Prepare input files for the analysis of all traits. 
