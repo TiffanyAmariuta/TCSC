@@ -74,12 +74,12 @@ Rscript fusion_twas-master/FUSION.assoc_test.R --sumstats $your_genomewide_sumst
 done
 done
 
-#C. Meta-analuyzed GTEx tissues which had small sample size and high genetic correlation to another GTEx tissue 
+#C. Meta-analyzed GTEx tissues which had small sample size and high genetic correlation to another GTEx tissue 
 for tissue in `cat TissuesC.txt`
 do
 for chr in {1..22}
 do
-Rscript fusion_twas-master/FUSION.assoc_test.meta.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/320EUR_metatissues/${tissue}.pos --weights_dir TCSC_weight_files/v8_320EUR --ref_ld_chr 1000G_EUR_Phase3_plink/1000G.EUR.QC. --chr $chr --out results_320/v8_320EUR.${your_genomewide_sumstats}/v8_320EUR.${trait}.${tissue}.${chr}.dat
+Rscript TCSC/analysis/FUSION.assoc_test.meta.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/320EUR_metatissues/${tissue}.pos --weights_dir TCSC_weight_files/v8_320EUR --ref_ld_chr 1000G_EUR_Phase3_plink/1000G.EUR.QC. --chr $chr --out results_320/v8_320EUR.${your_genomewide_sumstats}/v8_320EUR.${trait}.${tissue}.${chr}.dat
 done
 done
 ```
