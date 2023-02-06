@@ -1,5 +1,3 @@
-#please set working directory with setwd() to your local path to TCSC/
-
 library(data.table)
 library(Hmisc)
 
