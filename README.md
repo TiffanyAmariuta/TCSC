@@ -36,11 +36,12 @@ tar zxvf 1000G_Phase3_plinkfiles.tgz
 
 5. Download and unzip TCSC gene expression weight files
 ```
-mkdir -p TCSC_weight_files/v8_320EUR/
-cd TCSC_weight_files/v8_320EUR/
+mkdir TCSC_weight_files
+cd TCSC_weight_files
 for tissue in `cat TissuesA.txt`
 do
 wget https://storage.googleapis.com/broad-alkesgroup-public/TCSC/GeneExpressionModels/eQTL_samplesize_320/${tissue}.tar.gz
+tar zxvf ${tissue}.tar.gz #creates directory TCSC_weight_files/weights/v8_320EUR/META_${tissue}/
 done
 
 mkdir -p TCSC_weight_files/v8_allEUR/
@@ -48,12 +49,14 @@ cd TCSC_weight_files/v8_allEUR/
 for tissue in `cat TissuesB.txt`
 do
 wget https://storage.googleapis.com/broad-alkesgroup-public/TCSC/GeneExpressionModels/eQTL_samplesize_all/${tissue}.tar.gz
+tar zxvf ${tissue}.tar.gz #creates directory TCSC_weight_files/weights/v8_allEUR_${tissue}_blup/
 done
 
 cd ../v8_320EUR/
 for tissue in `cat TissuesC.txt`
 do
 wget https://storage.googleapis.com/broad-alkesgroup-public/TCSC/GeneExpressionModels/eQTL_samplesize_320/${tissue}.post.meta.tar.gz
+tar zxvf ${tissue}.tar.gz #creates directory TCSC_weight_files/weights/v8_320EUR/META_${tissue}/
 done
 ```
 
@@ -65,7 +68,7 @@ for tissue in `cat TissuesA.txt`
 do
 for chr in {1..22}
 do
-Rscript fusion_twas-master/FUSION.assoc_test.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/320EUR_metatissues/${tissue}.pos --weights_dir TCSC_weight_files/v8_320EUR --ref_ld_chr 1000G_EUR_Phase3_plink/1000G.EUR.QC. --chr $chr --out results_320/v8_320EUR.${trait}/v8_320EUR.${trait}.${tissue}.${chr}.dat
+Rscript fusion_twas-master/FUSION.assoc_test.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/320EUR_metatissues/${tissue}.pos --weights_dir TCSC_weight_files/weights/v8_320EUR --ref_ld_chr 1000G_EUR_Phase3_plink/1000G.EUR.QC. --chr $chr --out results_320/v8_320EUR.${trait}/v8_320EUR.${trait}.${tissue}.${chr}.dat
 done
 done
 
@@ -74,7 +77,7 @@ for tissue in `cat TissuesB.txt`
 do
 for chr in {1..22}
 do
-Rscript fusion_twas-master/FUSION.assoc_test.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/allEUR_tissues/${tissue}.pos --weights_dir TCSC_weight_files/v8_allEUR --ref_ld_chr 1000G_EUR_Phase3_plink/1000G.EUR.QC. --chr $chr --out results_all/v8_allEUR.${trait}/v8_allEUR.${trait}.${tissue}.${chr}.dat
+Rscript fusion_twas-master/FUSION.assoc_test.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/allEUR_tissues/${tissue}.pos --weights_dir TCSC_weight_files/weights --ref_ld_chr 1000G_EUR_Phase3_plink/1000G.EUR.QC. --chr $chr --out results_all/v8_allEUR.${trait}/v8_allEUR.${trait}.${tissue}.${chr}.dat
 done
 done
 
@@ -83,7 +86,7 @@ for tissue in `cat TissuesC.txt`
 do
 for chr in {1..22}
 do
-Rscript TCSC/analysis/FUSION.assoc_test.meta.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/320EUR_metatissues/${tissue}.pos --weights_dir TCSC_weight_files/v8_320EUR --ref_ld_chr 1000G_EUR_Phase3_plink/1000G.EUR.QC. --chr $chr --out results_320/v8_320EUR.${trait}/v8_320EUR.${trait}.${tissue}.${chr}.dat
+Rscript TCSC/analysis/FUSION.assoc_test.meta.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/320EUR_metatissues/${tissue}.pos --weights_dir TCSC_weight_files/weights/v8_320EUR --ref_ld_chr 1000G_EUR_Phase3_plink/1000G.EUR.QC. --chr $chr --out results_320/v8_320EUR.${trait}/v8_320EUR.${trait}.${tissue}.${chr}.dat
 done
 done
 ```
@@ -119,54 +122,66 @@ Obtain common SNP heritability from LDSC and set $h2g to that value. Set $N to t
 Rscript TCSC/analysis/Run_TCSC.R ${trait},${h2g},${N}
 ```
 
-### Input Data 
+### Descrition of Input Data Provided in Repo
 
 1. Signed GWAS summary statistics (formatted for S-LDSC; Finucane 2015 Nat Genet)
 ```
-sumstats/
+TCSC/sumstats/
 ```
 
 2. Gene expression prediction models
 
-In our primary analysis, for tissues with sample size greater than 320, we subsampled to 320 individuals per tissue; for groups of tissues with sample size less than 320 and highly correlation of marginal eQTL effect sizes, we meta-analyzed gene expression models such that each meta-tissue has an effective sample size of 320 individuals. These gene expression prediction models can be found here: https://alkesgroup.broadinstitute.org/TCSC/GeneExpressionModels/eQTL_samplesize_320/
+In our primary analysis, for tissues with sample size greater than 320, we subsampled to 320 individuals per tissue; for groups of tissues with sample size less than 320 and high correlation of marginal eQTL effect sizes, we meta-analyzed gene expression models such that each meta-tissue has an effective sample size of 320 individuals. These gene expression prediction models can be found here: https://alkesgroup.broadinstitute.org/TCSC/GeneExpressionModels/eQTL_samplesize_320/
 
-Note: for prediction models using *all* GTEx v8 European samples, please see http://gusevlab.org/projects/fusion/. 
+For tissues with small sample size (< 320) that could not be reasonably meta-analyzed with another tissue, we used the full set of European samples for that tissue. These gene expression prediction models can be found here: https://alkesgroup.broadinstitute.org/TCSC/GeneExpressionModels/eQTL_samplesize_all/
 
-You can find a list of cis heritable genes per tissue in each of the above analyses here: 
+You can find a list of significantly cis-heritable genes (GCTA p < 0.01, GCTA h2 estimation > 0, cross validation R2 > 0) per tissue in each of the above analyses here: 
 ```
-weights/
+TCSC/weights/
 ```
 
 3. TWAS summary statistics computed using FUSION (Gusev 2016 Nat Genet; http://gusevlab.org/projects/fusion/)
 
 While we cannot provide TWAS summary statistics for all of our analyses on Github due to file quantity, we provide one representative set of TWAS summary statistics for BMI. Other TWAS summary statistics generated by our study can be found here: https://alkesgroup.broadinstitute.org/TCSC/TWAS_sumstats/
 ```
-twas_statistics/
+TCSC/twas_statistics/
 ```
 
-### Running TCSC
+4. Co-regulation scores
 
-1. Using gene expression prediction models for cis-heritable genes (GCTA p < 0.01, GCTA h2 estimation > 0, cross validation R2 > 0), impute gene expression into reference panel, e.g. 489 European individuals in 1KG. 
+You can find the co-regulation score matrix (where columns correspond to tissues and rows correspond to significantly cis-heritable gene-tissue pairs) for the primary TCSC analysis here: 
+```
+TCSC/coregulation_scores/CoregulationMatrix_320orlessGTEx_062122.txt.gz
+```
+
+5. Predicted expression in 489 European individuals from 1000 Genomes
+```
+TCSC/predicted_expression/
+```
+
+### Our steps for preparing inputs to TCSC and running TCSC
+
+1. Using gene expression prediction models for significantly cis-heritable genes (GCTA p < 0.01, GCTA h2 estimation > 0, cross validation R2 > 0), impute gene expression into reference panel, e.g. 489 European individuals in 1000 Genomes. 
 
 We use FUSION (http://gusevlab.org/projects/fusion/) to first compute score files for each gene expression model. Then we use plink, as done in FUSION, to impute gene expression into 1KG individuals.
 ```
-predicted_expression/
+TCSC/predicted_expression/
 ```
 
 2. Construct gene and tissue co-regulation scores using squared correlations of predicted expression and applying bias correction (using gene model accuracy) when tissue t = t'. 
 
 ```
-analysis/MakeCoregulationScores.R
+TCSC/analysis/MakeCoregulationScores.R
 ```
 
 3. Prepare input files for the analysis of all traits. 
 ```
-analysis/TCSC_setup.R
+TCSC/analysis/TCSC_setup.R
 ```
 
 4. Run TCSC regression for each trait. 
 ```
-analysis/Run_TCSC.R $trait
+TCSC/analysis/Run_TCSC.R ${trait},${h2g},${N}
 ```
 
 
