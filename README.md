@@ -122,7 +122,7 @@ Obtain common SNP heritability from LDSC and set $h2g to that value. Set $N to t
 Rscript TCSC/analysis/Run_TCSC.R ${trait},${h2g},${N}
 ```
 
-### Descrition of Input Data Provided in Repo
+### Description of Input Data Provided in Repo
 
 1. Signed GWAS summary statistics (formatted for S-LDSC; Finucane 2015 Nat Genet)
 ```
