@@ -65,7 +65,7 @@ for tissue in `cat TissuesA.txt`
 do
 for chr in {1..22}
 do
-Rscript fusion_twas-master/FUSION.assoc_test.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/320EUR_metatissues/${tissue}.pos --weights_dir TCSC_weight_files/v8_320EUR --ref_ld_chr 1000G_EUR_Phase3_plink/1000G.EUR.QC. --chr $chr --out results_320/v8_320EUR.${your_genomewide_sumstats}/v8_320EUR.${trait}.${tissue}.${chr}.dat
+Rscript fusion_twas-master/FUSION.assoc_test.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/320EUR_metatissues/${tissue}.pos --weights_dir TCSC_weight_files/v8_320EUR --ref_ld_chr 1000G_EUR_Phase3_plink/1000G.EUR.QC. --chr $chr --out results_320/v8_320EUR.${trait}/v8_320EUR.${trait}.${tissue}.${chr}.dat
 done
 done
 
@@ -74,7 +74,7 @@ for tissue in `cat TissuesB.txt`
 do
 for chr in {1..22}
 do
-Rscript fusion_twas-master/FUSION.assoc_test.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/allEUR_tissues/${tissue}.pos --weights_dir TCSC_weight_files/v8_allEUR --ref_ld_chr 1000G_EUR_Phase3_plink/1000G.EUR.QC. --chr $chr --out results_all/v8_allEUR.${your_genomewide_sumstats}/v8_allEUR.${trait}.${tissue}.${chr}.dat
+Rscript fusion_twas-master/FUSION.assoc_test.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/allEUR_tissues/${tissue}.pos --weights_dir TCSC_weight_files/v8_allEUR --ref_ld_chr 1000G_EUR_Phase3_plink/1000G.EUR.QC. --chr $chr --out results_all/v8_allEUR.${trait}/v8_allEUR.${trait}.${tissue}.${chr}.dat
 done
 done
 
@@ -83,7 +83,7 @@ for tissue in `cat TissuesC.txt`
 do
 for chr in {1..22}
 do
-Rscript TCSC/analysis/FUSION.assoc_test.meta.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/320EUR_metatissues/${tissue}.pos --weights_dir TCSC_weight_files/v8_320EUR --ref_ld_chr 1000G_EUR_Phase3_plink/1000G.EUR.QC. --chr $chr --out results_320/v8_320EUR.${your_genomewide_sumstats}/v8_320EUR.${trait}.${tissue}.${chr}.dat
+Rscript TCSC/analysis/FUSION.assoc_test.meta.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/320EUR_metatissues/${tissue}.pos --weights_dir TCSC_weight_files/v8_320EUR --ref_ld_chr 1000G_EUR_Phase3_plink/1000G.EUR.QC. --chr $chr --out results_320/v8_320EUR.${trait}/v8_320EUR.${trait}.${tissue}.${chr}.dat
 done
 done
 ```
@@ -91,19 +91,22 @@ done
 7. Aggregate TWAS results across chromosomes
 
 ```
+type=large
 for tissue in `cat TissuesA.txt`
 do
-Rscript concat_chrs.R ${trait},${tissue}
+Rscript concat_chrs.R ${trait},${tissue},${type}
 done
 
+type=small
 for tissue in `cat TissuesB.txt`
 do
-Rscript concat_chrs_small.R ${trait},${tissue}
+Rscript concat_chrs.R ${trait},${tissue},${type}
 done
 
+type=large
 for tissue in `cat TissuesC.txt`
 do
-Rscript concat_chrs.R ${trait},${tissue}
+Rscript concat_chrs.R ${trait},${tissue},${type}
 done
 
 ```
