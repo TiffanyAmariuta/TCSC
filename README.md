@@ -159,6 +159,13 @@ TCSC/coregulation_scores/CoregulationMatrix_320orlessGTEx_062122.txt.gz
 TCSC/predicted_expression/
 ```
 
+6. Data for brain-specific analysis (TCSC power to analyze brain-related traits can be improved by restricting analysis to brain tissues):
+```
+TCSC/analysis/TCSC_setup_BrainSpecific.R
+TCSC/analysis/InputCoreg_BrainSpecific.RData
+TCSC/analysis/Run_TCSC_BrainSpecific.R
+```
+
 ### Our steps for preparing inputs to TCSC and running TCSC
 
 1. Using gene expression prediction models for significantly cis-heritable genes (GCTA p < 0.01, GCTA h2 estimation > 0, cross validation R2 > 0), impute gene expression into reference panel, e.g. 489 European individuals in 1000 Genomes. 
