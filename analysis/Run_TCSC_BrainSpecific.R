@@ -113,10 +113,10 @@ variance_mat[nrow(variance_mat),3] <- sqrt(wtd.var(jk_sum[,1],jk_weights[,1]))*s
 variance_mat[,4] <- pnorm(q = 0, mean = as.numeric(variance_mat[,2]), sd = as.numeric(variance_mat[,3])) 
 variance_mat[1:ncol(jk),5] <- p.adjust(as.numeric(variance_mat[1:ncol(jk),4]), method = "fdr")
 variance_mat[nrow(variance_mat),5] <- NA
-variance_mat[1:ncol(jk),6] <- as.numeric(variance_mat[,2]) / h2g
-variance_mat[1:ncol(jk),7] <- as.numeric(variance_mat[,3]) / h2g
+variance_mat[1:nrow(variance_mat),6] <- as.numeric(variance_mat[,2]) / h2g
+variance_mat[1:nrow(variance_mat),7] <- as.numeric(variance_mat[,3]) / h2g
 
 
-colnames(variance_mat) <- c("Tissue","h2ge_t","h2ge_t_se","NomP","FDRP","Proph2","Proph2_se")
+colnames(variance_mat) <- c("Tissue","h2_ge_t","h2_ge_t_se","NomP","FDRP","Proph2","Proph2_se")
 write.table(variance_mat, file = paste0("TCSC/results/TCSC_",trait,"_BrainSpecificAnalysis.txt"), row.names = F, col.names = T, sep = "\t", quote = F)
 
