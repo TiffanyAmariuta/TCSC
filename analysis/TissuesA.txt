@@ -1,0 +1,17 @@
+Adipose_Subcutaneous
+Adipose_Visceral_Omentum
+Artery_Aorta
+Artery_Tibial
+Breast_Mammary_Tissue
+Cells_Cultured_fibroblasts
+Esophagus_Mucosa
+Esophagus_Muscularis
+Heart_Atrial_Appendage
+Heart_Left_Ventricle
+Lung
+Muscle_Skeletal
+Nerve_Tibial
+Skin_Not_Sun_Exposed_Suprapubic
+Skin_Sun_Exposed_Lower_leg
+Thyroid
+Whole_Blood

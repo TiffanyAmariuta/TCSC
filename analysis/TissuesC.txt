@@ -1,0 +1,16 @@
+Adrenal_Gland
+Artery_Coronary
+Brain_Spinal_cord_cervical_c-1
+Brain_Substantia_nigra
+Cells_EBV-transformed_lymphocytes
+Liver
+Minor_Salivary_Gland
+Ovary
+Pancreas
+Pituitary
+Prostate
+Spleen
+Stomach
+Testis
+Uterus
+Vagina

@@ -1,0 +1,6 @@
+Brain_Limbic
+Brain_Cortex
+Brain_BasalGanglia
+Brain_Cerebellum
+Colon_Sigmoid
+Colon_Transverse
