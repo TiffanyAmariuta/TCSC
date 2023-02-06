@@ -111,6 +111,14 @@ done
 
 ```
 
+8. Run TCSC using your GWAS sumstats and default GTEx gene expression data 
+
+Obtain common SNP heritability from LDSC and set $h2g to that value. Set $N to the GWAS sample size. 
+
+```
+Rscript TCSC/analysis/Run_TCSC.R ${trait},${h2g},${N}
+```
+
 ### Input Data 
 
 1. Signed GWAS summary statistics (formatted for S-LDSC; Finucane 2015 Nat Genet)
