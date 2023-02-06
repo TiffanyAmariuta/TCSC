@@ -1,16 +1,12 @@
-#please set working directory with setwd() to your local path to TCSC/
-
-trait <- commandArgs(trailingOnly=TRUE) #format: example: UKB_460K.body_BMIz as in first column in TCSC/sumstats/alltraits.txt
-
+trait_h2g_N <- commandArgs(trailingOnly=TRUE)
+trait_h2g_N <- strsplit(trait_h2g_N,split = ",")[[1]]
+trait <- trait_h2g_N[1]
+h2g <- as.numeric(trait_h2g_N[2])
+N <- as.numeric(trait_h2g_N[3])
 library(data.table)
 library(Hmisc)
 
-traits <- fread("sumstats/alltraits.txt", header=T)
-m <- match(trait,traits$Trait_Identifier)
-N <- traits$N[m]
-h2g <- traits$h2g[m]
-
-y <- fread("analysis/TissueGroups.txt", header = T)
+y <- fread("TCSC/analysis/TissueGroups.txt", header = T)
 tissues <- y$Tissues
 
 get_cov_alpha1alpha1_multitissue <- function(alpha_z,CoRegMat,nGWAS,weights1,weights2,weights3,covar){ 
@@ -24,16 +20,16 @@ cov_b1b1 <- cov_b1b1[1:ncol(CoRegMat)]
 return(cov_b1b1)
 }
 
-load("analysis/InputCoreg_BrainSpecific.RData")
-gtex <- fread("analysis/gene_annotation.txt.gz", header = F, sep = "\t")
+load("TCSC/analysis/InputCoreg_BrainSpecific.RData")
+gtex <- fread("TCSC/analysis/gene_annotation.txt.gz", header = F, sep = "\t")
 
 #### trait specific analysis #### 
 g <- grep("Brain",tissues)
 tissues <- tissues[g]
 alpha_z <- c()
 for (i in 1:length(tissues)){
-transcript_key <- fread(paste0("weights/heritablegenes/Nall/TranscriptsIn",tissues[i],"Model.txt"), header = F)$V1
-z <- fread(paste0("twas_statistics/allEUR_GTEx/",trait,"/Marginal_alphas_",trait,"_",tissues[i],".txt.gz"), header = F)$V1
+transcript_key <- fread(paste0("TCSC/weights/heritablegenes/Nall/TranscriptsIn",tissues[i],"Model.txt"), header = F)$V1
+z <- fread(paste0("TCSC/twas_statistics/allEUR_GTEx/",trait,"/Marginal_alphas_",trait,"_",tissues[i],".txt.gz"), header = F)$V1
 m <- match(transcript_key,gtex$V7)
 genetype <- gtex$V8[m]
 alpha_z <- c(alpha_z,z[which(genetype == "protein_coding")])
@@ -79,9 +75,9 @@ mean_chisq <- mean(alpha_z^2)
 mean_coreg <- mean(rowSums(X)) 
 crude_h2_est <- (mean_chisq - 1)/(N*mean_coreg)
 weights1 <- (1 + N*crude_h2_est*rowSums(X))^2
-variance_mat <- matrix(0,1+length(tissues),5) #tissue, h2_ge_t, jackknife SE, P, fdr across tissues 
+variance_mat <- matrix(0,1+length(tissues),7) #tissue, h2_ge_t, jackknife SE, P, fdr across tissues 
 variance_mat[,1] <- c(tissues,"AllTissues")
-variance_mat[1:length(tissues),2] <- get_cov_alpha1alpha1_multitissue(alpha_z,X,N,weights1,weights2,weights3,covar) * expected_true_cish2_genes / h2g
+variance_mat[1:length(tissues),2] <- get_cov_alpha1alpha1_multitissue(alpha_z,X,N,weights1,weights2,weights3,covar) * expected_true_cish2_genes 
 variance_mat[(length(tissues)+1),2] <- sum(as.numeric(variance_mat[1:length(tissues),2]))
 
 chunks <- 200
@@ -106,7 +102,7 @@ crude_h2_est <- (mean_chisq - 1)/(N*mean_coreg)
 weights1_jk <- (1 + N*crude_h2_est*rowSums(X_jk))^2 
 weights2_jk <- weights2[-remove_genes] 
 weights3_jk <- weights3[-remove_genes] #upweights tissue specific genes
-jk[chunk,] <- get_cov_alpha1alpha1_multitissue(alpha_z_jk,X_jk,N,weights1_jk,weights2_jk,weights3_jk,covar) * N_tissuespecific_jk / h2g
+jk[chunk,] <- get_cov_alpha1alpha1_multitissue(alpha_z_jk,X_jk,N,weights1_jk,weights2_jk,weights3_jk,covar) * N_tissuespecific_jk 
 jk_sum[chunk,1] <- sum(as.numeric(jk[chunk,]))
 jk_weights[chunk,1] <- sum(1/(weights1_jk*weights2_jk*weights3_jk))
 } 
@@ -117,7 +113,10 @@ variance_mat[nrow(variance_mat),3] <- sqrt(wtd.var(jk_sum[,1],jk_weights[,1]))*s
 variance_mat[,4] <- pnorm(q = 0, mean = as.numeric(variance_mat[,2]), sd = as.numeric(variance_mat[,3])) 
 variance_mat[1:ncol(jk),5] <- p.adjust(as.numeric(variance_mat[1:ncol(jk),4]), method = "fdr")
 variance_mat[nrow(variance_mat),5] <- NA
+variance_mat[1:ncol(jk),6] <- as.numeric(variance_mat[,2]) / h2g
+variance_mat[1:ncol(jk),7] <- as.numeric(variance_mat[,3]) / h2g
 
-colnames(variance_mat) <- c("Tissue","h2ge_t","JK_SE","P","FDRP")
-write.table(variance_mat, file = paste0("results/TCSC_",trait,"_BrainSpecificAnalysis.txt"), row.names = F, col.names = T, sep = "\t", quote = F)
+
+colnames(variance_mat) <- c("Tissue","h2ge_t","h2ge_t_se","NomP","FDRP","Proph2","Proph2_se")
+write.table(variance_mat, file = paste0("TCSC/results/TCSC_",trait,"_BrainSpecificAnalysis.txt"), row.names = F, col.names = T, sep = "\t", quote = F)
 
