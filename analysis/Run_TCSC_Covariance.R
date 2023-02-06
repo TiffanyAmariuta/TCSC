@@ -1,5 +1,3 @@
-#please set working directory with setwd() to your local path to TCSC/
-
 trait1_trait2 = commandArgs(trailingOnly=TRUE) #format: example: UKB_460K.body_BMIz,UKB_460K.disease_ALLERGY_ECZEMA_DIAGNOSED 
 s <- strsplit(trait1_trait2,split = ",")[[1]]
 trait1 <- s[1]
@@ -8,17 +6,17 @@ trait2 <- s[2]
 library(data.table)
 library(Hmisc)
 
-traits <- fread("sumstats/alltraits.txt", header=T)
+traits <- fread("TCSC/sumstats/alltraits.txt", header=T)
 N1 <- traits$N[match(trait1,traits$Trait_Identifier)]
 N2 <- traits$N[match(trait2,traits$Trait_Identifier)]
 
 #read in covariance estimates for each trait pair 
-covariance <- fread("sumstats/AllPairs_Cov.txt", header=F, sep = "\t")
+covariance <- fread("TCSC/sumstats/AllPairs_Cov.txt", header=F, sep = "\t")
 m1 <- match(paste0(trait1,",",trait2),covariance$V1)
 m2 <- match(paste0(trait2,",",trait1),covariance$V1)
 cov_ge <- ifelse(is.na(m1), covariance$V2[m2], covariance$V2[m1])
 
-y <- fread("analysis/TissueGroups.txt", header = T) #one row per GTEx tissue analyzed in Amariuta et al 2022 bioRxiv
+y <- fread("TCSC/analysis/TissueGroups.txt", header = T) #one row per GTEx tissue analyzed in Amariuta et al 2022 bioRxiv
 tissues <- unique(y$MetaTissue) #tissues with eQTL sample size < 320 are grouped together via meta-analysis if the correlation of marginal eQTL effects is > 0.93. 
 
 n_eqtl <- sapply(1:length(tissues), function(x) sum(y$N_EUR[which(y$MetaTissue == tissues[x])])) #find total available sample size from GTEx data after accounting for meta-analysis of tissues
@@ -75,8 +73,8 @@ weights <- w1*w2*w3
 return(weights)
 }
 
-load("analysis/InputCoreg_TCSC.RData")
-gtex <- fread("analysis/gene_annotation.txt.gz", header = F, sep = "\t")
+load("TCSC/analysis/InputCoreg_TCSC.RData")
+gtex <- fread("TCSC/analysis/gene_annotation.txt.gz", header = F, sep = "\t")
 
 #### trait specific analysis #### 
 
@@ -86,13 +84,13 @@ alpha_z <- c()
 trait <- get(paste0("trait",k))
 for (i in 1:length(tissues)){
 if(i %in% small_tissues){
-transcript_key <- fread(paste0("weights/heritablegenes/Nall/TranscriptsIn",tissues[i],"Model.txt"), header = F)$V1
-keep <- fread(paste0("weights/heritablegenes/Nall/TranscriptsIn",tissues[i],"Model_keep.txt"), header = F)$V1
-z <- fread(paste0("twas_statistics/allEUR_GTEx/",trait,"/Marginal_alphas_",trait,"_",tissues[i],".txt.gz"), header = F)$V1
+transcript_key <- fread(paste0("TCSC/weights/heritablegenes/Nall/TranscriptsIn",tissues[i],"Model.txt"), header = F)$V1
+keep <- fread(paste0("TCSC/weights/heritablegenes/Nall/TranscriptsIn",tissues[i],"Model_keep.txt"), header = F)$V1
+z <- fread(paste0("TCSC/twas_statistics/allEUR_GTEx/",trait,"/Marginal_alphas_",trait,"_",tissues[i],".txt.gz"), header = F)$V1
 }else{
-transcript_key <- fread(paste0("weights/heritablegenes/N320/TranscriptsIn",tissues[i],"Model.txt"), header = F)$V1
-keep <- fread(paste0("weights/heritablegenes/N320/TranscriptsIn",tissues[i],"Model_keep.txt"), header = F)$V1
-z <- fread(paste0("twas_statistics/320EUR_GTEx/",trait,"/Marginal_alphas_",trait,"_",tissues[i],".txt.gz"), header = F)$V1
+transcript_key <- fread(paste0("TCSC/weights/heritablegenes/N320/TranscriptsIn",tissues[i],"Model.txt"), header = F)$V1
+keep <- fread(paste0("TCSC/weights/heritablegenes/N320/TranscriptsIn",tissues[i],"Model_keep.txt"), header = F)$V1
+z <- fread(paste0("TCSC/twas_statistics/320EUR_GTEx/",trait,"/Marginal_alphas_",trait,"_",tissues[i],".txt.gz"), header = F)$V1
 }
 w <- which(transcript_key %in% keep)
 transcript_key <- transcript_key[w]
@@ -140,9 +138,9 @@ a <- cbind(a, group_assignment)
 a <- a[order(a[,1], decreasing = F),]
 a <- cbind(a,transcripts)
 
-variance_mat <- matrix(0,1+length(tissues),5) #tissue, omega_ge_t, jackknife SE, P, FDR across tissues 
+variance_mat <- matrix(0,1+length(tissues),7) #tissue, omega_ge_t, jackknife SE, P, FDR across tissues 
 variance_mat[,1] <- c(tissues,"AllTissues")
-variance_mat[1:length(tissues),2] <- get_cov_alpha1alpha2_multitissue(alpha_z1,alpha_z2,X,N1,N2,weights3,weights2)$covariance * expected_true_cish2_genes / abs(cov_ge)
+variance_mat[1:length(tissues),2] <- get_cov_alpha1alpha2_multitissue(alpha_z1,alpha_z2,X,N1,N2,weights3,weights2)$covariance * expected_true_cish2_genes 
 variance_mat[(length(tissues)+1),2] <- sum(as.numeric(variance_mat[1:length(tissues),2]))
 
 chunks <- 200 
@@ -159,7 +157,7 @@ w <- which(!is.na(m))
 subtract_genes[w] <- as.numeric(tab)[m[w]]
 N_tissuespecific_jk <- sapply(1:length(N_tissuespecific), function(x) N_tissuespecific[x] - subtract_genes[x])
 bb <- get_cov_alpha1alpha2_multitissue(alpha_z1[-remove_genes],alpha_z2[-remove_genes],X[-remove_genes,],N1,N2,weights3[-remove_genes],weights2[-remove_genes]) 
-jk[chunk,] <- bb$covariance * N_tissuespecific_jk / abs(cov_ge)
+jk[chunk,] <- bb$covariance * N_tissuespecific_jk 
 jk_sum[chunk,1] <- sum(as.numeric(jk[chunk,]))
 jk_weights[,1] <- sum(bb$weights) 
 } 
@@ -172,6 +170,8 @@ twosidedP <- twosidedP*2
 fdradjusted_twosidedp <- p.adjust(twosidedP, method = "fdr")
 variance_mat[1:length(tissues),5] <- fdradjusted_twosidedp 
 variance_mat[(length(tissues)+1),5] <- NA
+variance_mat[1:nrow(variance_mat),6] <- as.numeric(variance_mat[,2]) / cov_ge
+variance_mat[1:nrow(variance_mat),7] <- as.numeric(variance_mat[,3]) / cov_ge
 
-colnames(variance_mat) <- c("Tissue","omega_ge_t","JK_SE","P","FDRP")
-write.table(variance_mat, file = paste0("results/CrossTraitTCSC_",trait1,"_",trait2,".txt"), row.names = F, col.names = T, sep = "\t", quote = F)
+colnames(variance_mat) <- c("Tissue","omega_ge_t","omega_ge_t_se","NomP","FDRP","PropCov","PropCov_se")
+write.table(variance_mat, file = paste0("TCSC/results/CrossTraitTCSC_",trait1,"_",trait2,".txt"), row.names = F, col.names = T, sep = "\t", quote = F)
