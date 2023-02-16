@@ -8,6 +8,8 @@ TCSC is a statistical genetics method to identify causal tissues in diseases and
 
 R v.3.6.1
 
+TCSC uses TWAS statistics computed from the FUSION software (http://gusevlab.org/projects/fusion/). We have decided that TCSC as an R package would not be compatible with future maintenance and bug fixes made to the TWAS software, which exists as a Github repo. 
+
 ### Quick Start: Apply TCSC to new GWAS summary statistics and default gene expression data from GTEx
 1. Preprocess your GWAS summary statistics such that they are in LDSC format
 
