@@ -1,6 +1,6 @@
 trait_tissue_type <- commandArgs(trailingOnly=TRUE)
 library(data.table)
-trait_tissue_type <- strsplit(trait_tissue,split = ",")[[1]]
+trait_tissue_type <- strsplit(trait_tissue_type,split = ",")[[1]]
 trait <- trait_tissue_type[1]
 tissue <- trait_tissue_type[2]
 type <- trait_tissue_type[3]
