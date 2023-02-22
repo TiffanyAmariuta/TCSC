@@ -79,7 +79,7 @@ for tissue in `cat TissuesB.txt`
 do
 for chr in {1..22}
 do
-Rscript fusion_twas-master/FUSION.assoc_test.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/allEUR_tissues/${tissue}.pos --weights_dir TCSC_weight_files/weights --ref_ld_chr 1000G_EUR_Phase3_plink/1000G.EUR.QC. --chr $chr --out results_all/v8_allEUR.${trait}/v8_allEUR.${trait}.${tissue}.${chr}.dat
+Rscript fusion_twas-master/FUSION.assoc_test.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/allEUR_tissues/v8_allEUR_${tissue}_blup.pos --weights_dir TCSC_weight_files/weights --ref_ld_chr 1000G_EUR_Phase3_plink/1000G.EUR.QC. --chr $chr --out results_all/v8_allEUR.${trait}/v8_allEUR.${trait}.${tissue}.${chr}.dat
 done
 done
 
