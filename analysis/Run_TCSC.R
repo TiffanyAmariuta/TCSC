@@ -37,9 +37,9 @@ transcript_key <- fread(paste0("TCSC/weights/heritablegenes/Nall/TranscriptsIn",
 keep <- fread(paste0("TCSC/weights/heritablegenes/Nall/TranscriptsIn",tissues[i],"Model_keep.txt"), header = F)$V1
 z <- fread(paste0("TCSC/twas_statistics/allEUR_GTEx/",trait,"/Marginal_alphas_",trait,"_",tissues[i],".txt.gz"), header = F)$V1
 }else{
-transcript_key <- fread(paste0("weights/heritablegenes/N320/TranscriptsIn",tissues[i],"Model.txt"), header = F)$V1
-keep <- fread(paste0("weights/heritablegenes/N320/TranscriptsIn",tissues[i],"Model_keep.txt"), header = F)$V1 
-z <- fread(paste0("twas_statistics/320EUR_GTEx/",trait,"/Marginal_alphas_",trait,"_",tissues[i],".txt.gz"), header = F)$V1
+transcript_key <- fread(paste0("TCSC/weights/heritablegenes/N320/TranscriptsIn",tissues[i],"Model.txt"), header = F)$V1
+keep <- fread(paste0("TCSC/weights/heritablegenes/N320/TranscriptsIn",tissues[i],"Model_keep.txt"), header = F)$V1 
+z <- fread(paste0("TCSC/twas_statistics/320EUR_GTEx/",trait,"/Marginal_alphas_",trait,"_",tissues[i],".txt.gz"), header = F)$V1
 }
 w <- which(transcript_key %in% keep)
 transcript_key <- transcript_key[w]
