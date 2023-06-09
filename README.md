@@ -32,8 +32,8 @@ git clone https://github.com/gusevlab/fusion_twas
 
 4. Download and unzip LD reference files for 1000 Genomes European population
 ```
-wget https://storage.googleapis.com/broad-alkesgroup-public/LDSCORE/1000G_Phase3_plinkfiles.tgz
-tar zxvf 1000G_Phase3_plinkfiles.tgz
+wget https://data.broadinstitute.org/alkesgroup/FUSION/LDREF.tar.bz2
+tar xjvf LDREF.tar.bz2
 ```
 
 5. Download and unzip TCSC gene expression weight files
@@ -70,7 +70,7 @@ for tissue in `cat TissuesA.txt`
 do
 for chr in {1..22}
 do
-Rscript fusion_twas-master/FUSION.assoc_test.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/320EUR_metatissues/${tissue}.pos --weights_dir TCSC_weight_files/weights/v8_320EUR --ref_ld_chr 1000G_EUR_Phase3_plink/1000G.EUR.QC. --chr $chr --out results_320/v8_320EUR.${trait}/v8_320EUR.${trait}.${tissue}.${chr}.dat
+Rscript fusion_twas-master/FUSION.assoc_test.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/320EUR_metatissues/${tissue}.pos --weights_dir TCSC_weight_files/weights/v8_320EUR --ref_ld_chr LDREF/1000G.EUR. --chr $chr --out results_320/v8_320EUR.${trait}/v8_320EUR.${trait}.${tissue}.${chr}.dat
 done
 done
 
@@ -79,7 +79,7 @@ for tissue in `cat TissuesB.txt`
 do
 for chr in {1..22}
 do
-Rscript fusion_twas-master/FUSION.assoc_test.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/allEUR_tissues/v8_allEUR_${tissue}_blup.pos --weights_dir TCSC_weight_files/weights --ref_ld_chr 1000G_EUR_Phase3_plink/1000G.EUR.QC. --chr $chr --out results_all/v8_allEUR.${trait}/v8_allEUR.${trait}.${tissue}.${chr}.dat
+Rscript fusion_twas-master/FUSION.assoc_test.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/allEUR_tissues/v8_allEUR_${tissue}_blup.pos --weights_dir TCSC_weight_files/weights --ref_ld_chr LDREF/1000G.EUR. --chr $chr --out results_all/v8_allEUR.${trait}/v8_allEUR.${trait}.${tissue}.${chr}.dat
 done
 done
 
@@ -88,7 +88,7 @@ for tissue in `cat TissuesC.txt`
 do
 for chr in {1..22}
 do
-Rscript TCSC/analysis/FUSION.assoc_test.meta.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/320EUR_metatissues/${tissue}.pos --weights_dir TCSC_weight_files/weights/v8_320EUR --ref_ld_chr 1000G_EUR_Phase3_plink/1000G.EUR.QC. --chr $chr --out results_320/v8_320EUR.${trait}/v8_320EUR.${trait}.${tissue}.${chr}.dat
+Rscript TCSC/analysis/FUSION.assoc_test.meta.R --sumstats $your_genomewide_sumstats --weights TCSC/weights/320EUR_metatissues/${tissue}.pos --weights_dir TCSC_weight_files/weights/v8_320EUR --ref_ld_chr LDREF/1000G.EUR. --chr $chr --out results_320/v8_320EUR.${trait}/v8_320EUR.${trait}.${tissue}.${chr}.dat
 done
 done
 ```
