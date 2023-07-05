@@ -98,5 +98,6 @@ coregmat[,j] <- genegenecoreg_pc
 X <- rbind(X,coregmat) #for every i 
 } #loop i over tissues, e.g. over tissues represented in columns of X
 
+X <- X[-c(1:2),]
 write.table(X, file = "TCSC/coregulation_scores/CoregulationMatrix_320orlessGTEx.txt", row.names = F, col.names = F, sep = "\t", quote = F)
 system("gzip TCSC/coregulation_scores/CoregulationMatrix_320orlessGTEx.txt")
