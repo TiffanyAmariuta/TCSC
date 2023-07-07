@@ -168,6 +168,11 @@ TCSC/analysis/InputCoreg_BrainSpecific.RData
 TCSC/analysis/Run_TCSC_BrainSpecific.R
 ```
 
+### Code for running the RTC Coloc method with simulated data
+```
+TCSC/simulation_analysis/
+```
+
 ### Our steps for preparing inputs to TCSC and running TCSC
 
 1. Using gene expression prediction models for significantly cis-heritable genes (GCTA p < 0.01, GCTA h2 estimation > 0, cross validation R2 > 0), impute gene expression into reference panel, e.g. 489 European individuals in 1000 Genomes. 
