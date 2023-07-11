@@ -1,4 +1,13 @@
+
+
+
 #ONGEN PIPELINE
+
+
+#Make GWAS summary statistics 
+python Nov_sim_GWASsumstats.py $sim $ve_gene $ve_snp $ngwas
+Rscript Nov_reformat_sumstats.R ${sim}_${ve_gene}_${ve_snp}_${ngwas}
+
 sbatch -c 1 -N 1 -t 0-01:00 -p short --mem=2G -o out/run_Ongen_eqtl.out --wrap="Rscript Nov_Ongen_1_runGWAS.R"
 
 #for every tissue, do genome-wide eqtl analysis. Get list of eqtls that are significant and set of null variants too. 
