@@ -64,9 +64,9 @@ system(paste0("gzip -f TCSC/simulation_analysis/SEG/tstats/*_sim",sim,".txt"))
 
 #annotate SNPs 
 library(data.table)
-snps <- fread("TCSC/simulation_analysis/1000G.EUR.QC.hm3_noMHC.1.bim", header = F) #98K 1000G EUR SNPs 
+snps <- fread("TCSC/simulation_analysis/1000G.EUR.QC.hm3_noMHC.1.frq", header = F) #98K 1000G EUR SNPs 
 #write.table(snps$V2, file = "list.txt", row.names = F, col.names = F, sep = "\t", quote = F)
-snpannot <- fread("TCSC/simulation_analysis/sample_annot.1.annot.gz", header=T)
+snpannot <- fread("TCSC/simulation_analysis/sample_annot.1.annot.gz", header=T) #obtain any sample annot from s-ldsc 
 snpannot$Chromatin <- 0
 w <- which(snpannot$SNP %in% snps$V2)
 snpannot <- snpannot[w,]
