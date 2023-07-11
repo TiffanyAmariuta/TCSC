@@ -5,7 +5,7 @@ tissues <- 0:9
 samps <- c(100,200,300,500,1000,1500)
 ve <- 0.05
 res <- matrix(0,0,5)
-setwd("Ongen_files/res/")
+setwd("TCSC/simulation_analysis/RTC_Coloc/output/Ongen_files/res/") #need to make this directory
 files <- list.files(pattern = "ve0.1.txt") #"Ongen_files/res/")
 for (sim in files){
     myres <- fread(sim, header = F)
@@ -47,6 +47,6 @@ a <- rbind(a, c(1,1))
 a <- a[order(a[,1],decreasing = F),]
 print(simple_auc(a[,2],a[,1]))
 colnames(a) <- c("oneminus_specificity","sensitivity")
-write.table(a, file = paste0("/n/groups/price/tiffany/subpheno/Simulations/roc/RTCColoc_ROCcurve_samp",samp,".txt"), row.names = F, col.names = T, sep = "\t", quote = F)
+write.table(a, file = paste0("RTCColoc_ROCcurve_samp",samp,".txt"), row.names = F, col.names = T, sep = "\t", quote = F)
 }
 

@@ -40,7 +40,7 @@ for (sim in 1:sims){
         #do random null variants, matched based on distance to TSS and MAF (doesn't matter for us) 
         s <- sapply(1:length(w), function(x) sample(possiblesnps$V2[possiblesnps$binorder == snps$binorder[w[x]]], size = 1))
         nullvariants <- match(s,snps$V2)
-        filename <- paste0("TCSC/simulation_analysis/output/Ongen_files/gwas_null_snps/Nov_sim",sim,"_ve",ve,".txt")
+        filename <- paste0("TCSC/simulation_analysis/RTC_Coloc/output/Ongen_files/gwas_null_snps/Nov_sim",sim,"_ve",ve,".txt")
         write.table(nullvariants, file = filename, row.names = F, col.names = F, sep = "\t", quote = F)
         system(paste0("gzip -f ",filename))
     }

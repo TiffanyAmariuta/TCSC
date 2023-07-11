@@ -5,14 +5,14 @@ b <- as.numeric(s[2])
 samp <- as.numeric(s[3]) #ran within 5 hours for GWAS coloc over samps, but not for eqtl-eqtl coloc. can be NA for b = 1, b = 2 
 ve <- as.numeric(s[4])
 library(data.table)
-source("Ongen_fxn.R")
+source("TCSC/simulation_analysis/Ongen_fxn.R")
 ngenes <- 1000
-genes <- fread("1000genes_Nov.txt", header = T)
+genes <- fread("TCSC/simulation_analysis/1000genes_Nov.txt", header = T)
 #tsses <- as.numeric(genes$START)
 tissues <- 0:9
 samplesizes <- c(100,200,300,500,1000,1500)
-snpmat <- fread("1KG_HM3_chr1.bim", header = F) #GRCh37
-QTL_geno_all <- as.matrix(fread(paste0("Simulated_eQTL_Cohort_for_ImputedExpression.txt.gz"), header = F))
+snpmat <- fread("TCSC/simulation_analysis/1KG_HM3_chr1.bim", header = F) #GRCh37
+QTL_geno_all <- as.matrix(fread(paste0("TCSC/simulation_analysis/Simulated_eQTL_Cohort_for_ImputedExpression.txt.gz"), header = F))
 colnames(QTL_geno_all) <- snpmat$V2
 #coldspots <- fread("Ongen_files/coldspots_hg19.txt.gz", header = F) #too few snps in these coldspots
 #want to take recombination hotspots (bed file) and define cold spots (regions between these hotpots)
@@ -34,7 +34,7 @@ if(b > 2){samplesizes <- samplesizes[samp]}
 
 for (samp in samplesizes){ #if eqtl-eqtl coloc, just iterate over chosen sample size. 
     print(samp)
-    if(b < 3){snp_df <- fread(paste0("Ongen_files/",snplists[b],"/Nov_sim",sim,"_ve",ve,".txt.gz"), header = F)
+    if(b < 3){snp_df <- fread(paste0("TCSC/simulation_analysis/RTC_Coloc/output/Ongen_files/",snplists[b],"/Nov_sim",sim,"_ve",ve,".txt.gz"), header = F)
     othertissues <- tissues
     } #snp index. 
     if(b > 2){#snp_df <- fread(paste0("Ongen_files/",snplists[b],"/SigeQTLs_samp",samp,"_sim",sim,".txt.gz"), header = F) #gene,snp index, move columns around so just use snp.
@@ -43,7 +43,7 @@ for (samp in samplesizes){ #if eqtl-eqtl coloc, just iterate over chosen sample 
     #only do eqtl-eqtl coloc with eqtls of tissueA that are coloc with GWAS variant (and null variants). 
     #makes the most difference at large sample size! #at 300, basically the same. so still need to increase job time. 
     #gwas_snp_df <- fread(paste0("Ongen_files/Ongen_GWASeQTL_res/GWAS_SNP_RTC_Tissue",b-3,"_sim",sim,"_ve",ve,"_samp",samp,"_Nov.txt"), header=F)
-    gwas_null_df <- fread(paste0("Ongen_files/Ongen_GWASeQTL_res_null/GWAS_SNP_RTC_Tissue",b-3,"_sim",sim,"_ve",ve,"_samp",samp,"_Nov.txt"), header=F)
+    gwas_null_df <- fread(paste0("TCSC/simulation_analysis/RTC_Coloc/output/Ongen_files/Ongen_GWASeQTL_res_null/GWAS_SNP_RTC_Tissue",b-3,"_sim",sim,"_ve",ve,"_samp",samp,"_Nov.txt"), header=F)
     #gwas_colo_eqtls <- unique(gwas_snp_df$V3,gwas_null_df$V3)
     gwas_colo_eqtls <- unique(gwas_null_df$V3)
     snp_df <- data.frame(match(gwas_colo_eqtls,snpmat$V2))
@@ -52,11 +52,11 @@ for (samp in samplesizes){ #if eqtl-eqtl coloc, just iterate over chosen sample 
     } 
 
     for (ti in othertissues){ 
-        checkfile <- paste0("Ongen_files/",outputs[b],"/NULLGWAS_SNP_RTC_Tissue",ti,"_sim",sim,"_ve",ve,"_samp",samp,"_Nov.txt")
+        checkfile <- paste0("TCSC/simulation_analysis/RTC_Coloc/output/Ongen_files/",outputs[b],"/NULLGWAS_SNP_RTC_Tissue",ti,"_sim",sim,"_ve",ve,"_samp",samp,"_Nov.txt")
         if(!file.exists(checkfile)){ #run code. 
         print(ti)
-        tot_GE <- as.matrix(fread(paste0("totalexpression/Nov_0.75_ggcoreg/",samp,"/TotExp_Nov_Group1_Tissue",ti,"_sim",sim,".txt.gz"),header = F))
-        tissue_qtls <- fread(paste0("Ongen_files/eqtl_tissue",ti,"/SigeQTLs_samp",samp,"_sim",sim,".txt.gz"), header = F)
+        tot_GE <- as.matrix(fread(paste0("TCSC/simulation_analysis/totalexpression/Nov_0.75_ggcoreg/",samp,"/TotExp_Nov_Group1_Tissue",ti,"_sim",sim,".txt.gz"),header = F))
+        tissue_qtls <- fread(paste0("TCSC/simulation_analysis/RTC_Coloc/output/Ongen_files/eqtl_tissue",ti,"/SigeQTLs_samp",samp,"_sim",sim,".txt.gz"), header = F)
         GWAS_SNP_RTC <- matrix(0,0,8) #data.frame()
         eQTLP_forGWASvar <- c()
         for (j in 1:nrow(snp_df)){
@@ -148,7 +148,7 @@ for (samp in samplesizes){ #if eqtl-eqtl coloc, just iterate over chosen sample 
         }else{pshare <- rep(0,nrow(GWAS_SNP_RTC))}
 
         GWAS_SNP_RTC <- cbind(GWAS_SNP_RTC,pshare) #rtc, gwas snp (or eqtl snp), eqtl snp, nearby gene, beta, int, boundary used, pshare
-        write.table(GWAS_SNP_RTC, file = paste0("Ongen_files/",outputs[b],"/NULLGWAS_SNP_RTC_Tissue",ti,"_sim",sim,"_ve",ve,"_samp",samp,"_Nov.txt"), row.names = F, col.names = F, quote= F, sep = "\t")
+        write.table(GWAS_SNP_RTC, file = paste0("TCSC/simulation_analysis/RTC_Coloc/output/Ongen_files/",outputs[b],"/NULLGWAS_SNP_RTC_Tissue",ti,"_sim",sim,"_ve",ve,"_samp",samp,"_Nov.txt"), row.names = F, col.names = F, quote= F, sep = "\t")
         } #if file does not exist 
     } #tissues
 } #samps

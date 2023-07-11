@@ -8,21 +8,21 @@ ve <- 0.1
 
 res <- matrix(0,0,5)
     print(sim)
-    num_gwasvariants <- nrow(fread(paste0("Ongen_files/gwas_snps/Nov_sim",sim,"_ve",ve,".txt.gz"), header = F))
+    num_gwasvariants <- nrow(fread(paste0("TCSC/simulation_analysis/RTC_Coloc/output/Ongen_files/gwas_snps/Nov_sim",sim,"_ve",ve,".txt.gz"), header = F))
            
     for (samp in 1:length(samps)){
         print(samp)
         sigeQTLs <- c()
         for (ti in tissues){
-            yy <- fread(paste0("Ongen_files/eqtl_tissue",ti,"/SigeQTLs_samp",samps[samp],"_sim",sim,".txt.gz"), header = F)
+            yy <- fread(paste0("TCSC/simulation_analysis/RTC_Coloc/output/Ongen_files/eqtl_tissue",ti,"/SigeQTLs_samp",samps[samp],"_sim",sim,".txt.gz"), header = F)
             sigeQTLs <- c(sigeQTLs,nrow(yy))
         }
         for (ti in tissues){
             othertissues <- tissues[-match(ti,tissues)]
             #read in GWAS-eQTL p_share for tissue ti
             #1.rtc, 2.gwas snp (or eqtl snp), 3.eqtl snp, 4.nearby gene, 5.beta, 6.int, 7.boundary used, 8.pshare
-            y_real <- as.matrix(fread(paste0("Ongen_files/",inputs[1],"/GWAS_SNP_RTC_Tissue",ti,"_sim",sim,"_ve",ve,"_samp",samps[samp],"_Nov.txt"), header = F))
-            y_null <- as.matrix(fread(paste0("Ongen_files/",inputs[2],"/GWAS_SNP_RTC_Tissue",ti,"_sim",sim,"_ve",ve,"_samp",samps[samp],"_Nov.txt"), header = F))
+            y_real <- as.matrix(fread(paste0("TCSC/simulation_analysis/RTC_Coloc/output/Ongen_files/",inputs[1],"/GWAS_SNP_RTC_Tissue",ti,"_sim",sim,"_ve",ve,"_samp",samps[samp],"_Nov.txt"), header = F))
+            y_null <- as.matrix(fread(paste0("TCSC/simulation_analysis/RTC_Coloc/output/Ongen_files/",inputs[2],"/GWAS_SNP_RTC_Tissue",ti,"_sim",sim,"_ve",ve,"_samp",samps[samp],"_Nov.txt"), header = F))
             #problem that mean(as.numeric(y_null[,9])) is greater than mean(as.numeric(y_real[,9]))
             #iterate through eqtl snp in col 3, divide col 8 by the pshare of that eqtl in the other tissues. 
             #note: these eqtls that were found here are at a very nonstrict threshold. i
@@ -36,9 +36,9 @@ res <- matrix(0,0,5)
                 #read in data first. 
                 for (tis in othertissues){
                 if(j == 1){
-                yy <- as.matrix(fread(paste0("Ongen_files/",inputs[3+ti],"/GWAS_SNP_RTC_Tissue",tis,"_sim",sim,"_ve",ve,"_samp",samps[samp],"_Nov.txt"), header = F))
+                yy <- as.matrix(fread(paste0("TCSC/simulation_analysis/RTC_Coloc/output/Ongen_files/",inputs[3+ti],"/GWAS_SNP_RTC_Tissue",tis,"_sim",sim,"_ve",ve,"_samp",samps[samp],"_Nov.txt"), header = F))
                 }else{
-                yy <- as.matrix(fread(paste0("Ongen_files/",inputs[3+ti],"/NULLGWAS_SNP_RTC_Tissue",tis,"_sim",sim,"_ve",ve,"_samp",samps[samp],"_Nov.txt"), header = F))
+                yy <- as.matrix(fread(paste0("TCSC/simulation_analysis/RTC_Coloc/output/Ongen_files/",inputs[3+ti],"/NULLGWAS_SNP_RTC_Tissue",tis,"_sim",sim,"_ve",ve,"_samp",samps[samp],"_Nov.txt"), header = F))
                 }
                 assign(paste0("yy_",tis),yy)
                 } #true that pshare of gwas-eqtl  
@@ -70,6 +70,6 @@ res <- matrix(0,0,5)
             res <- rbind(res, dump)
         } #tissues
     } #samps
-    write.table(res,file = paste0("Ongen_files/res/res_",sim,"_ve",ve,".txt"),row.names = F, col.names = F, sep = "\t", quote = F)
+    write.table(res,file = paste0("TCSC/simulation_analysis/RTC_Coloc/output/Ongen_files/res/res_",sim,"_ve",ve,".txt"),row.names = F, col.names = F, sep = "\t", quote = F)
 
 
