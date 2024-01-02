@@ -40,33 +40,36 @@ tar xjvf LDREF.tar.bz2
 ```
 mkdir TCSC_weight_files
 cd TCSC_weight_files
-for tissue in `cat TissuesA.txt`
+for tissue in `cat ../TCSC/analysis/TissuesA.txt`
 do
 wget https://storage.googleapis.com/broad-alkesgroup-public/TCSC/GeneExpressionModels/eQTL_samplesize_320/${tissue}.tar.gz
 tar zxvf ${tissue}.tar.gz #creates directory TCSC_weight_files/weights/v8_320EUR/META_${tissue}/
 done
 
+cd ../
 mkdir -p TCSC_weight_files/v8_allEUR/
 cd TCSC_weight_files/v8_allEUR/
-for tissue in `cat TissuesB.txt`
+for tissue in `cat ../TCSC/analysis/TissuesB.txt`
 do
 wget https://storage.googleapis.com/broad-alkesgroup-public/TCSC/GeneExpressionModels/eQTL_samplesize_all/${tissue}.tar.gz
 tar zxvf ${tissue}.tar.gz #creates directory TCSC_weight_files/weights/v8_allEUR_${tissue}_blup/
 done
 
 cd ../v8_320EUR/
-for tissue in `cat TissuesC.txt`
+for tissue in `cat ../TCSC/analysis/TissuesC.txt`
 do
 wget https://storage.googleapis.com/broad-alkesgroup-public/TCSC/GeneExpressionModels/eQTL_samplesize_320/${tissue}.post.meta.tar.gz
 tar zxvf ${tissue}.tar.gz #creates directory TCSC_weight_files/weights/v8_320EUR/META_${tissue}/
 done
+
+cd ../
 ```
 
 6. Run FUSION to perform TWAS analysis on provided gene expression data
 
 ```
 #A. GTEx tissues that we downsampled to N = 320 individuals 
-for tissue in `cat TissuesA.txt`
+for tissue in `cat TCSC/analysis/TissuesA.txt`
 do
 for chr in {1..22}
 do
@@ -75,7 +78,7 @@ done
 done
 
 #B. GTEx tissues with small sample size that we could not downsample
-for tissue in `cat TissuesB.txt`
+for tissue in `cat TCSC/analysis/TissuesB.txt`
 do
 for chr in {1..22}
 do
@@ -84,7 +87,7 @@ done
 done
 
 #C. Meta-analyzed GTEx tissues which had small sample size and high genetic correlation to another GTEx tissue 
-for tissue in `cat TissuesC.txt`
+for tissue in `cat TCSC/analysis/TissuesC.txt`
 do
 for chr in {1..22}
 do
@@ -97,19 +100,19 @@ done
 
 ```
 type=large
-for tissue in `cat TissuesA.txt`
+for tissue in `cat TCSC/analysis/TissuesA.txt`
 do
 Rscript concat_chrs.R ${trait},${tissue},${type}
 done
 
 type=small
-for tissue in `cat TissuesB.txt`
+for tissue in `cat TCSC/analysis/TissuesB.txt`
 do
 Rscript concat_chrs.R ${trait},${tissue},${type}
 done
 
 type=large
-for tissue in `cat TissuesC.txt`
+for tissue in `cat TCSC/analysis/TissuesC.txt`
 do
 Rscript concat_chrs.R ${trait},${tissue},${type}
 done
