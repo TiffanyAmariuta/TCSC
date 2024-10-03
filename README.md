@@ -59,7 +59,7 @@ cd ../v8_320EUR/
 for tissue in `cat ../TCSC/analysis/TissuesC.txt`
 do
 wget https://storage.googleapis.com/broad-alkesgroup-public/TCSC/GeneExpressionModels/eQTL_samplesize_320/${tissue}.post.meta.tar.gz
-tar zxvf ${tissue}.tar.gz #creates directory TCSC_weight_files/weights/v8_320EUR/META_${tissue}/
+tar zxvf ${tissue}.post.meta.tar.gz #creates directory TCSC_weight_files/weights/v8_320EUR/META_${tissue}/
 done
 
 cd ../
